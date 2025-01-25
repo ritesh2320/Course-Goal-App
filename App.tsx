@@ -1,117 +1,109 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
+import {useState} from 'react';
 import React from 'react';
-import type {PropsWithChildren} from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
   View,
+  Text,
+  SafeAreaView,
+  Button,
+  TextInput,
+  StyleSheet,
+  ScrollView,
+  FlatList,
 } from 'react-native';
+import GoalItem from './components/GoalItem';
+import GoalInput from './components/GoalInput';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
+function App() {
+  const [modalIsVisible, setModalIsVisible] = useState(false);
+  const [enteredGoalText, setGoalText] = useState('');
+  const [courseGoals, setCourseGoals] = useState<{text: string; id: string}[]>(
+    [],
   );
-}
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  function StartAddGoalHandler() {
+    setModalIsVisible(true);
+  }
+  function cancelGoalHandler() {
+    setModalIsVisible(false);
+  }
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+  function goalInputHandler(text) {
+    setGoalText(text);
+  }
+
+  function addGoalHandler() {
+    setCourseGoals(currentCourseGoals => [
+      ...currentCourseGoals,
+      {text: enteredGoalText, id: Math.random().toString()},
+    ]);
+    cancelGoalHandler();
+  }
+
+  function deleteGoalHandler(id) {
+    setCourseGoals(currentCourseGoals =>
+      currentCourseGoals.filter(goal => goal.id !== id),
+    );
+  }
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+    <SafeAreaView style={styles.appContainer}>
+      <Button
+        title="Add New Goal"
+        color={'#F14A00'}
+        onPress={StartAddGoalHandler}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
+      <View style={styles.goalList}>
+        {modalIsVisible && (
+          <GoalInput
+            modalVisible={modalIsVisible}
+            goalInpHandler={goalInputHandler}
+            addGoalHandler={addGoalHandler}
+            CancelGoalHandler={cancelGoalHandler}
+          />
+        )}
+      </View>
+      <ScrollView>
+        {/* mapping of list content */}
+        {/* {courseGoals.map((goal, index) => (
+          <View>
+            <Text key={index} style={styles.goalsItem}>
+              {goal}
+            </Text>
+          </View>
+        ))} */}
+
+        {/* flatlist---> used for rendering the list. it has two props i.e render item and data. it has a unique key */}
+
+        <FlatList
+          data={courseGoals}
+          renderItem={itemsData => {
+            return (
+              <GoalItem
+                text={itemsData.item.text}
+                deleteGoal={deleteGoalHandler}
+                id={itemsData.item.id}
+              />
+            );
+          }}
+          alwaysBounceVertical={false}
+        />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  appContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    // backgroundColor: '#4c0a80',
+    backgroundColor: '#2A004E',
+    height: '100%',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  goalList: {
+    marginTop: 20,
+    borderColor: 'grey',
+    borderWidth: 1,
   },
 });
 
